@@ -1,7 +1,7 @@
 PyDenseCRF
 ==========
 
-This is a (Cython-based) Python wrapper for Philipp Krähenbühl's Fully-Connected CRFs (version 2).
+This is a (Cython-based) Python wrapper for [Philipp Krähenbühl's Fully-Connected CRFs](http://www.philkr.net/home/densecrf) (version 2).
 
 If you use this code for your reasearch, please cite:
 
