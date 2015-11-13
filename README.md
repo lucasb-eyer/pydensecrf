@@ -19,8 +19,10 @@ Installation
 You can install this using `pip` by executing:
 
 ```
-TODO
+pip install git+https://github.com/lucasb-eyer/pydensecrf.git
 ```
+
+and ignoring all the warnings coming from Eigen.
 
 Usage
 =====
