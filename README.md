@@ -29,7 +29,7 @@ Usage
 
 For images, the easiest way to use this library is using the `DenseCRF2D` class:
 
-```
+```python
 import numpy as np
 import densecrf as dcrf
 
@@ -41,7 +41,7 @@ Unary potential
 
 You can then set a fixed unary potential in the following way:
 
-```
+```python
 U = np.array(...)     # Get the unary in some way.
 print(U.shape)        # -> (640, 480, 3)
 print(U.dtype)        # -> dtype('float32')
@@ -62,7 +62,7 @@ Pairwise potentials
 
 The two-dimensional case has two utility methods for adding the most-common pairwise potentials:
 
-```
+```python
 # This adds the color-independent term, features are the locations only.
 d.addPairwiseGaussian(sxy=(3,3), compat=3, kernel=dcrf.DIAG_KERNEL, normalization=dcrf.NORMALIZE_SYMMETRIC)
 
@@ -74,7 +74,7 @@ d.addPairwiseBilateral(sxy=(80,80), srgb=(13,13,13), rgbim=im, compat=10, kernel
 Both of these methods have shortcuts and default-arguments such that the most
 common use-case can be simplified to:
 
-```
+```python
 d.addPairwiseGaussian(sxy=3, compat=3)
 d.addPairwiseBilateral(sxy=80, srgb=13, rgbim=im, compat=10)
 ```
@@ -109,13 +109,13 @@ Inference
 
 The easiest way to do inference is to simply call:
 
-```
+```python
 Q = d.inference(n_iterations=5)
 ```
 
 And the MAP prediction is then:
 
-```
+```python
 map = np.argmax(Q, axis=0).reshape((640,480))
 ```
 
@@ -124,7 +124,7 @@ Step-by-step inference
 
 If for some reason you want to run the inference loop manually, you can do so:
 
-```
+```python
 Q, tmp1, tmp2 = d.startInference()
 for i in range(5):
     print("KL-divergence at {}: {}".format(i, d.klDivergence(Q)))
@@ -140,7 +140,7 @@ potentials `addPairwiseGaussian` and `addPairwiseBilateral` are missing.
 
 Instead, you need to use the generic `addPairwiseEnergy` method like this:
 
-```
+```python
 d = dcrf.DenseCRF(100, 3)  # npoints, nlabels
 
 feats = np.array(...)  # Get the pairwise features from somewhere.
