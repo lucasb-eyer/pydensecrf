@@ -24,16 +24,15 @@ pip install git+https://github.com/lucasb-eyer/pydensecrf.git
 
 and ignoring all the warnings coming from Eigen.
 
-Note that you need a relatively recent version of Cython (0.23.4 at the time of writing) for this wrapper,
+Note that you need a relatively recent version of Cython (at least version 0.22) for this wrapper,
 the one shipped with Ubuntu 14.04 is too old. (Thanks to Scott Wehrwein for pointing this out.)
-You can replace it by a newer version either by
+I suggest you use a [virtual environment](https://virtualenv.readthedocs.org/en/latest/) and install
+the newest version of Cython there (`pip install cython`), but you may update the system version by
 
 ```
 sudo apt-get remove cython
 sudo pip install -U cython
 ```
-
-or (recommended) by using a [virtual environment](https://virtualenv.readthedocs.org/en/latest/).
 
 Usage
 =====
