@@ -154,7 +154,7 @@ Instead, you need to use the generic `addPairwiseEnergy` method like this:
 d = dcrf.DenseCRF(100, 3)  # npoints, nlabels
 
 feats = np.array(...)  # Get the pairwise features from somewhere.
-print(feats.shape)     # -> (100, 3)
+print(feats.shape)     # -> (5, 100) = (feature dimensionality, npoints)
 print(feats.dtype)     # -> dtype('float32')
 
 dcrf.addPairwiseEnergy(feats)
