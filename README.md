@@ -91,7 +91,7 @@ d.addPairwiseBilateral(sxy=80, srgb=13, rgbim=im, compat=10)
 
 ### Compatibilities
 
-The `compatibility` argument can be any of the following:
+The `compat` argument can be any of the following:
 
 - A number, then a `PottsCompatibility` is being used.
 - A 1D array, then a `DiagonalCompatibility` is being used.
