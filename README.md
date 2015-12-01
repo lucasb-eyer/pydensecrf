@@ -43,7 +43,7 @@ For images, the easiest way to use this library is using the `DenseCRF2D` class:
 import numpy as np
 import densecrf as dcrf
 
-d = dcrf.DenseCRF2D(640, 480, 3)  # width, height, nlabels
+d = dcrf.DenseCRF2D(640, 480, 5)  # width, height, nlabels
 ```
 
 Unary potential
@@ -53,9 +53,9 @@ You can then set a fixed unary potential in the following way:
 
 ```python
 U = np.array(...)     # Get the unary in some way.
-print(U.shape)        # -> (640, 480, 3)
+print(U.shape)        # -> (640, 480, 5)
 print(U.dtype)        # -> dtype('float32')
-U = U.reshape((-1,3)) # Needs to be flat.
+U = U.reshape((-1,5)) # Needs to be flat.
 d.setUnaryEnergy(U)
 
 # Or alternatively: d.setUnary(ConstUnary(U))
@@ -151,10 +151,10 @@ potentials `addPairwiseGaussian` and `addPairwiseBilateral` are missing.
 Instead, you need to use the generic `addPairwiseEnergy` method like this:
 
 ```python
-d = dcrf.DenseCRF(100, 3)  # npoints, nlabels
+d = dcrf.DenseCRF(100, 5)  # npoints, nlabels
 
 feats = np.array(...)  # Get the pairwise features from somewhere.
-print(feats.shape)     # -> (5, 100) = (feature dimensionality, npoints)
+print(feats.shape)     # -> (7, 100) = (feature dimensionality, npoints)
 print(feats.dtype)     # -> dtype('float32')
 
 dcrf.addPairwiseEnergy(feats)
