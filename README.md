@@ -53,9 +53,9 @@ You can then set a fixed unary potential in the following way:
 
 ```python
 U = np.array(...)     # Get the unary in some way.
-print(U.shape)        # -> (640, 480, 5)
+print(U.shape)        # -> (5, 640, 480)
 print(U.dtype)        # -> dtype('float32')
-U = U.reshape((-1,5)) # Needs to be flat.
+U = U.reshape((5,-1)) # Needs to be flat.
 d.setUnaryEnergy(U)
 
 # Or alternatively: d.setUnary(ConstUnary(U))
