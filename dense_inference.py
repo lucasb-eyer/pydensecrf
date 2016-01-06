@@ -1,13 +1,17 @@
 #!/usr/bin/python
 
+"""
+Usage: python dense_inference.py image annotations output
+
+Adapted from the original C++ example: densecrf/examples/dense_inference.cpp
+http://www.philkr.net/home/densecrf Version 2.2
+"""
+
 import numpy as np
 import cv2
 import densecrf as dcrf
 from skimage.segmentation import relabel_sequential
 import sys
-
-# Usage:
-# python dense_inference.py image annotations output
 
 img = cv2.imread(sys.argv[1], 1)
 labels = relabel_sequential(cv2.imread(sys.argv[2], 0))[0].flatten()
