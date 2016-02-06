@@ -20,7 +20,7 @@ output = sys.argv[3]
 M = labels.max() + 1  # number of labels
 
 # Setup the CRF model
-d = dcrf.DenseCRF2D(img.shape[0], img.shape[1], M)
+d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], M)
 
 # Certainty that the ground truth is correct
 GT_PROB = 0.5
