@@ -59,7 +59,7 @@ def create_pairwise_gaussian(sdims, shape):
 
     # scale mesh accordingly
     for i, s in enumerate(sdims):
-        mesh[i] = mesh[i] / s
+        mesh[i] /= s
     return mesh.reshape([len(sdims), -1])
 
 
@@ -82,7 +82,7 @@ def create_pairwise_bilateral(sdims, schan, img, chdim=-1):
     chdim: int, optional
         This specifies where the channel dimension is in the image. For
         example `chdim=2` for a RGB image of size (240, 300, 3). If the
-        image has now channel dimension (e.g. it has only one channel) use
+        image has no channel dimension (e.g. it has only one channel) use
         `chdim=-1`.
 
     """
@@ -96,7 +96,7 @@ def create_pairwise_bilateral(sdims, schan, img, chdim=-1):
 
     # scale image features per channel
     for i, s in enumerate(schan):
-        im_feat[i] = im_feat[i] / s
+        im_feat[i] /= s
 
     # create a mesh
     cord_range = [range(s) for s in im_feat.shape[1:]]
@@ -104,13 +104,13 @@ def create_pairwise_bilateral(sdims, schan, img, chdim=-1):
 
     # scale mesh accordingly
     for i, s in enumerate(sdims):
-        mesh[i] = mesh[i] / s
+        mesh[i] /= s
 
     feats = np.concatenate([mesh, im_feat])
     return feats.reshape([feats.shape[0], -1])
 
 
-def create_pairwise_gaussian_2d(sx, sy, shape):
+def _create_pairwise_gaussian_2d(sx, sy, shape):
     """
     A simple reference implementation for the 2D case. The ND implementation
     is faster.
@@ -124,7 +124,7 @@ def create_pairwise_gaussian_2d(sx, sy, shape):
     return feats.reshape([feat_size, -1])
 
 
-def create_pairwise_bilateral_2d(sx, sy, sr, sg, sb, img):
+def _create_pairwise_bilateral_2d(sx, sy, sr, sg, sb, img):
     """
     A simple reference implementation for the 2D case. The ND implementation
     is faster.
