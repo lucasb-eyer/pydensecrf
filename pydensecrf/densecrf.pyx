@@ -1,6 +1,6 @@
 # distutils: language = c++
-# distutils: sources = densecrf/src/densecrf.cpp densecrf/src/unary.cpp densecrf/src/pairwise.cpp densecrf/src/permutohedral.cpp densecrf/src/optimization.cpp densecrf/src/objective.cpp densecrf/src/labelcompatibility.cpp densecrf/src/util.cpp densecrf/external/liblbfgs/lib/lbfgs.c
-# distutils: include_dirs = densecrf/include densecrf/external/liblbfgs/include
+# distutils: sources = pydensecrf/densecrf/src/densecrf.cpp pydensecrf/densecrf/src/unary.cpp pydensecrf/densecrf/src/pairwise.cpp pydensecrf/densecrf/src/permutohedral.cpp pydensecrf/densecrf/src/optimization.cpp pydensecrf/densecrf/src/objective.cpp pydensecrf/densecrf/src/labelcompatibility.cpp pydensecrf/densecrf/src/util.cpp pydensecrf/densecrf/external/liblbfgs/lib/lbfgs.c
+# distutils: include_dirs = pydensecrf/densecrf/include pydensecrf/densecrf/external/liblbfgs/include
 
 from numbers import Number
 

@@ -1,0 +1,10 @@
+
+build
+*.so
+*.egg-info
+
+pydensecrf/eigen.cpp
+pydensecrf/densecrf.cpp
+
+*~
+.idea
