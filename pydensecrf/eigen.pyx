@@ -1,6 +1,6 @@
 # distutils: language = c++
-# distutils: sources = eigen_impl.cpp
-# distutils: include_dirs = densecrf/include
+# distutils: sources = pydensecrf/eigen_impl.cpp
+# distutils: include_dirs = pydensecrf/densecrf/include
 
 
 # [::1] means we want a C-contiguous array.
