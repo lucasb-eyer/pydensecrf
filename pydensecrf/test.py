@@ -19,9 +19,9 @@ Up = (U + 1) / (np.sum(U, axis=0) + 2)
 img = np.zeros((10,10,3), dtype=np.uint8)
 img[2:8,2:8,:] = 255
 
-# d.setUnaryEnergy(-np.log(Up))
-# d.setUnaryEnergy(PyConstUnary(-np.log(Up)))
+d.setUnaryEnergy(-np.log(Up))
+#d.setUnaryEnergy(PyConstUnary(-np.log(Up)))
 
+d.addPairwiseBilateral(2, 2, img, 3)
 # d.addPairwiseBilateral(2, 2, img, 3)
-# d.addPairwiseBilateral(2, 2, img, 3)
-# np.argmax(d.inference(10), axis=0).reshape(10,10)
+np.argmax(d.inference(10), axis=0).reshape(10,10)
