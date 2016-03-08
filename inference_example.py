@@ -8,11 +8,11 @@ functions.
 import sys
 import numpy as np
 import cv2
-import densecrf as dcrf
+import pydensecrf.densecrf as dcrf
 import matplotlib.pylab as plt
 from skimage.segmentation import relabel_sequential
 
-from utils import compute_unary, create_pairwise_bilateral, \
+from pydensecrf.utils import compute_unary, create_pairwise_bilateral, \
     create_pairwise_gaussian
 
 fn_im = sys.argv[1]
