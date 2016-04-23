@@ -41,7 +41,7 @@ For images, the easiest way to use this library is using the `DenseCRF2D` class:
 
 ```python
 import numpy as np
-import densecrf as dcrf
+import pydensecrf.densecrf as dcrf
 
 d = dcrf.DenseCRF2D(640, 480, 5)  # width, height, nlabels
 ```

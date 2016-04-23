@@ -14,6 +14,6 @@ setup(
     author_email="lucasb.eyer.be@gmail.com",
     url="http://github.com/lucasb-eyer/pydensecrf",
     ext_modules=cythonize(['pydensecrf/eigen.pyx', 'pydensecrf/densecrf.pyx']),
-    py_modules = ["pydensecrf/utils"]
+    packages=["pydensecrf"]
 )
 
