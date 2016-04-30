@@ -55,7 +55,7 @@ def create_pairwise_gaussian(sdims, shape):
     """
     # create mesh
     hcord_range = [range(s) for s in shape]
-    mesh = np.array(np.meshgrid(*cord_range, indexing='ij'), dtype=np.float32)
+    mesh = np.array(np.meshgrid(*hcord_range, indexing='ij'), dtype=np.float32)
 
     # scale mesh accordingly
     for i, s in enumerate(sdims):
