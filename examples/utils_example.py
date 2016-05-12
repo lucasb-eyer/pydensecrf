@@ -1,8 +1,5 @@
 """
-Usage: python util_inference_example.py image annotations
-
-Adapted from the dense_inference.py to demonstate the usage of the util
-functions.
+Adapted from the inference.py to demonstate the usage of the util functions.
 """
 
 import sys
@@ -14,6 +11,10 @@ from skimage.segmentation import relabel_sequential
 
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, \
     create_pairwise_gaussian
+
+if len(sys.argv) != 3:
+    print("Usage: python {} IMAGE ANNO".format(sys.argv[0]))
+    sys.exit(1)
 
 fn_im = sys.argv[1]
 fn_anno = sys.argv[2]
