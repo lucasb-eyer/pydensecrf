@@ -25,8 +25,10 @@ fn_output = sys.argv[3]
 ### Read images and annotation ###
 ##################################
 img = cv2.imread(fn_im)
-labels = relabel_sequential(cv2.imread(fn_anno, 0))[0].flatten()
-M = 21 # 21 Classes to match the C++ example
+labels, _, _ = relabel_sequential(cv2.imread(fn_anno, 0))
+
+# Compute the number of classes in the label image
+M = len(set(labels.flat))
 
 ###########################
 ### Setup the CRF model ###
