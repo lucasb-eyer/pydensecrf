@@ -5,7 +5,21 @@ def compute_unary(labels, M, GT_PROB=0.5):
     """
     Simple classifier that is 50% certain that the annotation is correct
     (same as in the inference example).
+
+
+    Parameters
+    ----------
+    labels: nummpy.array
+        The label-map.
+    M: int
+        The number of labels there are.
+    GT_PROB: float
+        The certainty of the ground-truth (must be within (0,1)).
     """
+    assert 0 < GT_PROB < 1, "`GT_PROB must be in (0,1)."
+
+    labels = labels.flatten()
+
     u_energy = -np.log(1.0 / M)
     n_energy = -np.log((1.0 - GT_PROB) / (M - 1))
     p_energy = -np.log(GT_PROB)
