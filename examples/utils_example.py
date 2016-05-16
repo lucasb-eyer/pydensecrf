@@ -6,18 +6,20 @@ import sys
 import numpy as np
 import cv2
 import pydensecrf.densecrf as dcrf
-import matplotlib.pylab as plt
 from skimage.segmentation import relabel_sequential
 
 from pydensecrf.utils import compute_unary, create_pairwise_bilateral, \
     create_pairwise_gaussian
 
-if len(sys.argv) != 3:
-    print("Usage: python {} IMAGE ANNO".format(sys.argv[0]))
+if len(sys.argv) != 4:
+    print("Usage: python {} IMAGE ANNO OUTPUT".format(sys.argv[0]))
+    print("")
+    print("IMAGE and ANNO are inputs and OUTPUT is where the result should be written.")
     sys.exit(1)
 
 fn_im = sys.argv[1]
 fn_anno = sys.argv[2]
+fn_output = sys.argv[3]
 
 ##################################
 ### Read images and annotation ###
@@ -73,16 +75,13 @@ else:
 ### Do inference and compute map ###
 ####################################
 Q = d.inference(5)
-map = np.argmax(Q, axis=0).reshape(img.shape[:2])
-
-res = map.astype('float32') * 255 / map.max()
-plt.imshow(res)
-plt.show()
-
+MAP = np.argmax(Q, axis=0).astype('float32')
+MAP *= 255 / MAP.max()
+MAP = MAP.reshape(img.shape[:2])
+cv2.imwrite(fn_output, MAP.astype('uint8'))
 
 # Manually inference
 Q, tmp1, tmp2 = d.startInference()
 for i in range(5):
     print("KL-divergence at {}: {}".format(i, d.klDivergence(Q)))
     d.stepInference(Q, tmp1, tmp2)
-
