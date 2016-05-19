@@ -77,6 +77,8 @@ There's two common ways of getting unary potentials:
 2. From a probability distribution computed by, e.g. the softmax output of a
    deep network. For this, see `from pydensecrf.utils import softmax_to_unary`.
 
+For usage of both of these, please refer to their docstrings or have a look at [the example](examples/utils_example.py).
+
 Pairwise potentials
 -------------------
 

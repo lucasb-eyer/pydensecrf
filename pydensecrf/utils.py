@@ -3,16 +3,18 @@ import numpy as np
 
 def compute_unary(labels, M, GT_PROB=0.5):
     """
-    Simple classifier that is 50% certain that the annotation is correct
+    Simple classifier that is 50% certain that the annotation is correct.
     (same as in the inference example).
 
 
     Parameters
     ----------
     labels: nummpy.array
-        The label-map.
+        The label-map. The label value `0` is not a label, but the special
+        value indicating that the location has no label/information and thus
+        every label is equally likely.
     M: int
-        The number of labels there are.
+        The number of labels there are, not including the special `0` value.
     GT_PROB: float
         The certainty of the ground-truth (must be within (0,1)).
     """
