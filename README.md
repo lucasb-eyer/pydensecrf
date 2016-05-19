@@ -109,6 +109,8 @@ The `compat` argument can be any of the following:
 - A 1D array, then a `DiagonalCompatibility` is being used.
 - A 2D array, then a `MatrixCompatibility` is being used.
 
+Compatibilities are [ways to weight contributions](https://github.com/lucasb-eyer/pydensecrf/issues/8#issuecomment-188478006).
+
 ### Kernels
 
 Possible values for the `kernel` argument are:
