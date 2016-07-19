@@ -131,10 +131,10 @@ Possible values for the `normalization` argument are:
 Inference
 ---------
 
-The easiest way to do inference is to simply call:
+The easiest way to do inference with 5 iterations is to simply call:
 
 ```python
-Q = d.inference(n_iterations=5)
+Q = d.inference(5)
 ```
 
 And the MAP prediction is then:
