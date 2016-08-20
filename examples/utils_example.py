@@ -4,12 +4,20 @@ Adapted from the inference.py to demonstate the usage of the util functions.
 
 import sys
 import numpy as np
-import cv2
 import pydensecrf.densecrf as dcrf
-from skimage.segmentation import relabel_sequential
 
-from pydensecrf.utils import compute_unary, create_pairwise_bilateral, \
-    create_pairwise_gaussian
+# Get im{read,write} from somewhere: cv2, skimage, or scipy.
+try:
+    from cv2 import imread, imwrite
+except ImportError:
+    try:
+        from skimage.io import imread, imsave
+        imwrite = imsave
+    except ImportError:
+        from scipy.misc import imread, imsave
+        imwrite = imsave
+
+from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian
 
 if len(sys.argv) != 4:
     print("Usage: python {} IMAGE ANNO OUTPUT".format(sys.argv[0]))
@@ -24,22 +32,43 @@ fn_output = sys.argv[3]
 ##################################
 ### Read images and annotation ###
 ##################################
-img = cv2.imread(fn_im)
-labels, _, _ = relabel_sequential(cv2.imread(fn_anno, 0))
+img = imread(fn_im)
 
-# Compute the number of classes in the label image
-M = len(set(labels.flat))
+# Convert the annotation's RGB color to a single 32-bit integer color 0xBBGGRR
+anno_rgb = imread(fn_anno).astype(np.uint32)
+anno_lbl = anno_rgb[:,:,0] + (anno_rgb[:,:,1] << 8) + (anno_rgb[:,:,2] << 16)
+
+# Convert the 32bit integer color to 1, 2, ... labels.
+# Note that all-black, i.e. the value 0 for background will stay 0.
+colors, labels = np.unique(anno_lbl, return_inverse=True)
+
+# And create a mapping back from the labels to 32bit integer colors.
+# But remove the all-0 black, that won't exist in the MAP!
+colors = colors[1:]
+colorize = np.empty((len(colors), 3), np.uint8)
+colorize[:,0] = (colors & 0x0000FF)
+colorize[:,1] = (colors & 0x00FF00) >> 8
+colorize[:,2] = (colors & 0xFF0000) >> 16
+
+# Compute the number of classes in the label image.
+# We subtract one because the number shouldn't include the value 0 which stands
+# for "unknown" or "unsure".
+M = len(set(labels.flat)) - 1
+print(M, " labels and \"unknown\" 0: ", set(labels.flat))
 
 ###########################
 ### Setup the CRF model ###
 ###########################
 use_2d = False
+# use_2d = True
 if use_2d:
+    print("Using 2D specialized functions")
+
     # Example using the DenseCRF2D code
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], M)
 
     # get unary potentials (neg log probability)
-    U = compute_unary(labels, M)
+    U = compute_unary(labels, M, GT_PROB=0.7)
     d.setUnaryEnergy(U)
 
     # This adds the color-independent term, features are the locations only.
@@ -52,11 +81,13 @@ if use_2d:
                            kernel=dcrf.DIAG_KERNEL,
                            normalization=dcrf.NORMALIZE_SYMMETRIC)
 else:
+    print("Using generic 2D functions")
+
     # Example using the DenseCRF class and the util functions
-    d = dcrf.DenseCRF(img.shape[0] * img.shape[1], M)
+    d = dcrf.DenseCRF(img.shape[1] * img.shape[0], M)
 
     # get unary potentials (neg log probability)
-    U = compute_unary(labels, M)
+    U = compute_unary(labels, M, GT_PROB=0.7)
     d.setUnaryEnergy(U)
 
     # This creates the color-independent features and then add them to the CRF
@@ -74,15 +105,20 @@ else:
 
 
 ####################################
-### Do inference and compute map ###
+### Do inference and compute MAP ###
 ####################################
-Q = d.inference(5)
-MAP = np.argmax(Q, axis=0).astype('float32')
-MAP *= 255 / MAP.max()
-MAP = MAP.reshape(img.shape[:2])
-cv2.imwrite(fn_output, MAP.astype('uint8'))
 
-# Manually inference
+# Run five inference steps.
+Q = d.inference(5)
+
+# Find out the most probable class for each pixel.
+MAP = np.argmax(Q, axis=0)
+
+# Convert the MAP (labels) back to the corresponding colors and save the image.
+MAP = colorize[MAP,:]
+imsave(fn_output, MAP.reshape(img.shape))
+
+# Just randomly manually run inference iterations
 Q, tmp1, tmp2 = d.startInference()
 for i in range(5):
     print("KL-divergence at {}: {}".format(i, d.klDivergence(Q)))
