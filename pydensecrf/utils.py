@@ -28,7 +28,7 @@ def compute_unary(labels, M, GT_PROB=0.5):
 
     U = np.zeros((M, len(labels)), dtype='float32')
     U[:, labels > 0] = n_energy
-    U[labels, np.arange(U.shape[1])] = p_energy
+    U[labels - 1, np.arange(U.shape[1])] = p_energy
     U[:, labels == 0] = u_energy
     return U
 
