@@ -26,8 +26,10 @@ def compute_unary(labels, M, GT_PROB=0.5):
     n_energy = -np.log((1.0 - GT_PROB) / (M - 1))
     p_energy = -np.log(GT_PROB)
 
-    U = np.zeros((M, len(labels)), dtype='float32')
-    U[:, labels > 0] = n_energy
+    # Note that the order of the following operations is important.
+    # That's because the later ones overwrite part of the former ones, and only
+    # after all of them is `U` correct!
+    U = np.full((M, len(labels)), n_energy, dtype='float32')
     U[labels - 1, np.arange(U.shape[1])] = p_energy
     U[:, labels == 0] = u_energy
     return U
