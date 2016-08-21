@@ -16,7 +16,7 @@ except ImportError:
     imwrite = imsave
     # TODO: Use scipy instead.
 
-from pydensecrf.utils import compute_unary, create_pairwise_bilateral, create_pairwise_gaussian
+from pydensecrf.utils import unary_from_labels, create_pairwise_bilateral, create_pairwise_gaussian
 
 if len(sys.argv) != 4:
     print("Usage: python {} IMAGE ANNO OUTPUT".format(sys.argv[0]))
@@ -52,8 +52,8 @@ colorize[:,2] = (colors & 0xFF0000) >> 16
 # Compute the number of classes in the label image.
 # We subtract one because the number shouldn't include the value 0 which stands
 # for "unknown" or "unsure".
-M = len(set(labels.flat)) - 1
-print(M, " labels and \"unknown\" 0: ", set(labels.flat))
+n_labels = len(set(labels.flat)) - 1
+print(n_labels, " labels and \"unknown\" 0: ", set(labels.flat))
 
 ###########################
 ### Setup the CRF model ###
@@ -64,10 +64,10 @@ if use_2d:
     print("Using 2D specialized functions")
 
     # Example using the DenseCRF2D code
-    d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], M)
+    d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_labels)
 
     # get unary potentials (neg log probability)
-    U = compute_unary(labels, M, GT_PROB=0.7)
+    U = unary_from_labels(labels, n_labels, gt_prob=0.7, zero_unsure=True)
     d.setUnaryEnergy(U)
 
     # This adds the color-independent term, features are the locations only.
@@ -83,10 +83,10 @@ else:
     print("Using generic 2D functions")
 
     # Example using the DenseCRF class and the util functions
-    d = dcrf.DenseCRF(img.shape[1] * img.shape[0], M)
+    d = dcrf.DenseCRF(img.shape[1] * img.shape[0], n_labels)
 
     # get unary potentials (neg log probability)
-    U = compute_unary(labels, M, GT_PROB=0.7)
+    U = unary_from_labels(labels, n_labels, gt_prob=0.7, zero_unsure=True)
     d.setUnaryEnergy(U)
 
     # This creates the color-independent features and then add them to the CRF
