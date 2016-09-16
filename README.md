@@ -143,6 +143,14 @@ And the MAP prediction is then:
 map = np.argmax(Q, axis=0).reshape((640,480))
 ```
 
+If you're interested in the class-probabilities `Q`, you'll notice `Q` is a
+wrapped Eigen matrix. The Eigen wrappers of this project implement the buffer
+interface and can be simply cast to numpy arrays like so:
+
+```python
+proba = np.array(Q)
+```
+
 Step-by-step inference
 ----------------------
 
