@@ -109,7 +109,7 @@ The `compat` argument can be any of the following:
 - A 1D array, then a `DiagonalCompatibility` is being used.
 - A 2D array, then a `MatrixCompatibility` is being used.
 
-Compatibilities are [ways to weight contributions](https://github.com/lucasb-eyer/pydensecrf/issues/8#issuecomment-188478006).
+These are label-compatibilites `µ(xi, xj)` whose parameters could possibly be [learned](https://github.com/lucasb-eyer/pydensecrf#learning). For example, they could indicate that mistaking `bird` pixels for `sky` is not as bad as mistaking `cat` for `sky`. (Wrong, old interpretation: <s>[ways to weight contributions](https://github.com/lucasb-eyer/pydensecrf/issues/8#issuecomment-188478006)</s>).
 
 ### Kernels
 
@@ -119,6 +119,10 @@ Possible values for the `kernel` argument are:
 - `DIAG_KERNEL` (the default)
 - `FULL_KERNEL`
 
+This specifies the kernel's precision-matrix `Λ(m)`, which could possibly be learned.
+These indicate correlations between feature types, the default implying no correlation.
+Again, this could possiblty be [learned](https://github.com/lucasb-eyer/pydensecrf#learning).
+
 ### Normalizations
 
 Possible values for the `normalization` argument are:
@@ -127,6 +131,14 @@ Possible values for the `normalization` argument are:
 - `NORMALIZE_BEFORE`
 - `NORMALIZE_AFTER`
 - `NORMALIZE_SYMMETRIC` (the default)
+
+### Kernel weight
+
+I have so far not found a way to set the kernel weights `w(m)`.
+According to the paper, `w(2)` was set to 1 and `w(1)` was cross-validated, but never specified.
+Looking through Philip's code (included in [pydensecrf/densecrf](https://github.com/lucasb-eyer/pydensecrf/tree/master/pydensecrf/densecrf)),
+I couldn't find such explicit weights, and my guess is they are thus hard-coded to 1.
+If anyone knows otherwise, please open an issue or, better yet, a pull-request.
 
 Inference
 ---------
@@ -200,3 +212,7 @@ Learning
 
 The learning has not been fully wrapped. If you need it, get in touch or better
 yet, wrap it and submit a pull-request!
+
+Here's a pointer for starters: issue#24. We need to wrap the gradients and getting/setting parameters.
+But then, we also need to do something with these, most likely call [minimizeLBFGS from optimization.cpp](https://github.com/lucasb-eyer/pydensecrf/blob/d824b89ee3867bca3e90b9f04c448f1b41821524/pydensecrf/densecrf/src/optimization.cpp).
+It should be relatively straightforward to just follow the learning examples included in the [original code](http://graphics.stanford.edu/projects/drf/densecrf_v_2_2.zip).
