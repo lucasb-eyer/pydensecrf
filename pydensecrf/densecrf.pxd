@@ -90,3 +90,5 @@ cdef class DenseCRF:
 
 cdef class DenseCRF2D(DenseCRF):
     cdef c_DenseCRF2D *_this2d
+    cdef int _w
+    cdef int _h

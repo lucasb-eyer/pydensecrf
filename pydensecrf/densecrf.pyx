@@ -96,6 +96,11 @@ cdef class DenseCRF2D(DenseCRF):
         if type(self) is DenseCRF2D:
             self._this = self._this2d = new c_DenseCRF2D(w, h, nlabels)
 
+        # Unfortunately, self._this2d.W_ and .H_ are protected in C++ and thus
+        # we cannot access them from here for sanity-checks, so keep our own...
+        self._w = w
+        self._h = h
+
     def addPairwiseGaussian(self, sxy, compat, KernelType kernel=DIAG_KERNEL, NormalizationType normalization=NORMALIZE_SYMMETRIC):
         if isinstance(sxy, Number):
             sxy = (sxy, sxy)
@@ -108,6 +113,11 @@ cdef class DenseCRF2D(DenseCRF):
 
         if isinstance(srgb, Number):
             srgb = (srgb, srgb, srgb)
+
+        if rgbim.shape[0] != self._h or rgbim.shape[1] != self._w:
+            raise ValueError("Bad shape for pairwise bilateral (Need {}, got {})".format((self._h, self._w, 3), rgbim.shape))
+        if rgbim.shape[2] != 3:
+            raise ValueError("addPairwiseBilateral only works for RGB images. For other types, use `utils.create_pairwise_bilateral` to construct your own pairwise energy and add it through `addPairwiseEnergy`.")
 
         self._this2d.addPairwiseBilateral(
             sxy[0], sxy[1], srgb[0], srgb[1], srgb[2], &rgbim[0,0,0], _labelcomp(compat), kernel, normalization
