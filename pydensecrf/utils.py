@@ -1,4 +1,5 @@
 import numpy as np
+from numbers import Number
 from logging import warning
 
 
@@ -142,8 +143,12 @@ def create_pairwise_bilateral(sdims, schan, img, chdim=-1):
         im_feat = np.rollaxis(img, chdim).astype(np.float32)
 
     # scale image features per channel
-    for i, s in enumerate(schan):
-        im_feat[i] /= s
+    # Allow for a single number in `schan` to broadcast across all channels:
+    if isinstance(schan, Number):
+        im_feat /= schan
+    else:
+        for i, s in enumerate(schan):
+            im_feat[i] /= s
 
     # create a mesh
     cord_range = [range(s) for s in im_feat.shape[1:]]
