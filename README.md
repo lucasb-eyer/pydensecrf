@@ -220,3 +220,11 @@ yet, wrap it and submit a pull-request!
 Here's a pointer for starters: issue#24. We need to wrap the gradients and getting/setting parameters.
 But then, we also need to do something with these, most likely call [minimizeLBFGS from optimization.cpp](https://github.com/lucasb-eyer/pydensecrf/blob/d824b89ee3867bca3e90b9f04c448f1b41821524/pydensecrf/densecrf/src/optimization.cpp).
 It should be relatively straightforward to just follow the learning examples included in the [original code](http://graphics.stanford.edu/projects/drf/densecrf_v_2_2.zip).
+
+Common Problems
+===============
+
+`undefined symbol` when importing
+---------------------------------
+
+If while importing pydensecrf you get an error about some undefined symbols (for example `.../pydensecrf/densecrf.so: undefined symbol: _ZTINSt8ios_base7failureB5cxx11E`), you most likely are inadvertently mixing different compilers or toolchains. Try to see what's going on using tools like `ldd`. If you're using Anaconda, [running `conda install libgcc` might be a solution](https://github.com/lucasb-eyer/pydensecrf/issues/28).
