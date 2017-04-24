@@ -113,7 +113,9 @@ The `compat` argument can be any of the following:
 - A 1D array, then a `DiagonalCompatibility` is being used.
 - A 2D array, then a `MatrixCompatibility` is being used.
 
-These are label-compatibilites `µ(xi, xj)` whose parameters could possibly be [learned](https://github.com/lucasb-eyer/pydensecrf#learning). For example, they could indicate that mistaking `bird` pixels for `sky` is not as bad as mistaking `cat` for `sky`. (Wrong, old interpretation: <s>[ways to weight contributions](https://github.com/lucasb-eyer/pydensecrf/issues/8#issuecomment-188478006)</s>).
+These are label-compatibilites `µ(xi, xj)` whose parameters could possibly be [learned](https://github.com/lucasb-eyer/pydensecrf#learning).
+For example, they could indicate that mistaking `bird` pixels for `sky` is not as bad as mistaking `cat` for `sky`.
+The arrays should have `nlabels` or `(nlabels,nlabels)` as shape and a `float32` datatype.
 
 ### Kernels
 
