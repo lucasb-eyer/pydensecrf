@@ -45,7 +45,8 @@ colors, labels = np.unique(anno_lbl, return_inverse=True)
 # But remove the all-0 black, that won't exist in the MAP!
 HAS_UNK = 0 in colors
 if HAS_UNK:
-    print("Found a full-black pixel in annotation image, assuming it means 'unknown' label!")
+    print("Found a full-black pixel in annotation image, assuming it means 'unknown' label, and will thus not be present in the output!")
+    print("If 0 is an actual label for you, consider writing your own code, or simply giving your labels only non-zero values.")
     colors = colors[1:]
 #else:
 #    print("No single full-black pixel found in annotation image. Assuming there's no 'unknown' label!")
