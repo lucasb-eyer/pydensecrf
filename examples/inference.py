@@ -22,6 +22,7 @@ if len(sys.argv) != 4:
     print("Usage: python {} IMAGE ANNO OUTPUT".format(sys.argv[0]))
     print("")
     print("IMAGE and ANNO are inputs and OUTPUT is where the result should be written.")
+    print("If there's at least one single full-black pixel in ANNO, black is assumed to mean unknown.")
     sys.exit(1)
 
 fn_im = sys.argv[1]
@@ -41,9 +42,15 @@ anno_lbl = anno_rgb[:,:,0] + (anno_rgb[:,:,1] << 8) + (anno_rgb[:,:,2] << 16)
 # Note that all-black, i.e. the value 0 for background will stay 0.
 colors, labels = np.unique(anno_lbl, return_inverse=True)
 
-# And create a mapping back from the labels to 32bit integer colors.
 # But remove the all-0 black, that won't exist in the MAP!
-colors = colors[1:]
+HAS_UNK = 0 in colors
+if HAS_UNK:
+    print("Found a full-black pixel in annotation image, assuming it means 'unknown' label!")
+    colors = colors[1:]
+#else:
+#    print("No single full-black pixel found in annotation image. Assuming there's no 'unknown' label!")
+
+# And create a mapping back from the labels to 32bit integer colors.
 colorize = np.empty((len(colors), 3), np.uint8)
 colorize[:,0] = (colors & 0x0000FF)
 colorize[:,1] = (colors & 0x00FF00) >> 8
@@ -52,8 +59,8 @@ colorize[:,2] = (colors & 0xFF0000) >> 16
 # Compute the number of classes in the label image.
 # We subtract one because the number shouldn't include the value 0 which stands
 # for "unknown" or "unsure".
-n_labels = len(set(labels.flat)) - 1
-print(n_labels, " labels and \"unknown\" 0: ", set(labels.flat))
+n_labels = len(set(labels.flat)) - int(HAS_UNK)
+print(n_labels, " labels", (" plus \"unknown\" 0: " if HAS_UNK else ""), set(labels.flat))
 
 ###########################
 ### Setup the CRF model ###
@@ -67,7 +74,7 @@ if use_2d:
     d = dcrf.DenseCRF2D(img.shape[1], img.shape[0], n_labels)
 
     # get unary potentials (neg log probability)
-    U = unary_from_labels(labels, n_labels, gt_prob=0.7, zero_unsure=True)
+    U = unary_from_labels(labels, n_labels, gt_prob=0.7, zero_unsure=HAS_UNK)
     d.setUnaryEnergy(U)
 
     # This adds the color-independent term, features are the locations only.
@@ -86,7 +93,7 @@ else:
     d = dcrf.DenseCRF(img.shape[1] * img.shape[0], n_labels)
 
     # get unary potentials (neg log probability)
-    U = unary_from_labels(labels, n_labels, gt_prob=0.7, zero_unsure=True)
+    U = unary_from_labels(labels, n_labels, gt_prob=0.7, zero_unsure=HAS_UNK)
     d.setUnaryEnergy(U)
 
     # This creates the color-independent features and then add them to the CRF
@@ -114,8 +121,9 @@ Q = d.inference(5)
 MAP = np.argmax(Q, axis=0)
 
 # Convert the MAP (labels) back to the corresponding colors and save the image.
+# Note that there is no "unknown" here anymore, no matter what we had at first.
 MAP = colorize[MAP,:]
-imsave(fn_output, MAP.reshape(img.shape))
+imwrite(fn_output, MAP.reshape(img.shape))
 
 # Just randomly manually run inference iterations
 Q, tmp1, tmp2 = d.startInference()
