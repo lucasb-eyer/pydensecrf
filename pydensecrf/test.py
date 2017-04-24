@@ -1,5 +1,25 @@
 import numpy as np
-import densecrf as dcrf
+import pydensecrf.densecrf as dcrf
+
+# TODO: Make this real unit-tests some time in the future...
+
+# Tests for specific issues
+###########################
+
+# Via e-mail: crash when non-float32 compat
+d = dcrf.DenseCRF2D(10,10,2)
+d.setUnaryEnergy(np.ones((2,10*10), dtype=np.float32))
+compat = np.array([1.0, 2.0])
+try:
+    d.addPairwiseBilateral(sxy=(3,3), srgb=(3,3,3), rgbim=np.zeros((10,10,3), np.uint8), compat=compat)
+    d.inference(2)
+    raise TypeError("Didn't raise an exception, but should because compat dtypes don't match!!")
+except ValueError:
+    pass  # That's what we want!
+
+
+# The following is not a really good unittest, but was the first tests.
+###########################
 
 # d = densecrf.PyDenseCRF2D(3, 2, 3)
 # U = np.full((3,6), 0.1, dtype=np.float32)
@@ -25,3 +45,4 @@ d.setUnaryEnergy(-np.log(Up))
 d.addPairwiseBilateral(2, 2, img, 3)
 # d.addPairwiseBilateral(2, 2, img, 3)
 np.argmax(d.inference(10), axis=0).reshape(10,10)
+

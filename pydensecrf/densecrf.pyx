@@ -8,7 +8,7 @@ import eigen
 cimport eigen
 
 
-cdef LabelCompatibility* _labelcomp(compat):
+cdef LabelCompatibility* _labelcomp(compat) except NULL:
     if isinstance(compat, Number):
         return new PottsCompatibility(compat)
     elif memoryview(compat).ndim == 1:
@@ -17,6 +17,7 @@ cdef LabelCompatibility* _labelcomp(compat):
         return new MatrixCompatibility(eigen.c_matrixXf(compat))
     else:
         raise ValueError("LabelCompatibility of dimension >2 not meaningful.")
+    return NULL  # Important for the exception(s) to propagate!
 
 
 cdef class Unary:
