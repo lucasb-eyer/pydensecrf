@@ -86,6 +86,8 @@ cdef extern from "densecrf/include/densecrf.h":
 
 cdef class DenseCRF:
     cdef c_DenseCRF *_this
+    cdef int _nlabel
+    cdef int _nvar
 
 
 cdef class DenseCRF2D(DenseCRF):
