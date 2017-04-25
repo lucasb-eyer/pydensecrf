@@ -69,8 +69,8 @@ cdef class DenseCRF:
             del self._this
 
     def addPairwiseEnergy(self, float[:,::1] features not None, compat, KernelType kernel=DIAG_KERNEL, NormalizationType normalization=NORMALIZE_SYMMETRIC):
-        if features.shape[0] != self._nlabel or features.shape[1] != self._nvar:
-            raise ValueError("Bad shape for pairwise energy (Need {}, got {})".format((self._nlabel, self._nvar), (features.shape[0], features.shape[1])))
+        if features.shape[1] != self._nvar:
+            raise ValueError("Bad shape for pairwise energy (Need (?, {}), got {})".format(self._nvar, (features.shape[0], features.shape[1])))
 
         self._this.addPairwiseEnergy(eigen.c_matrixXf(features), _labelcomp(compat), kernel, normalization)
 
