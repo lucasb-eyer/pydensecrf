@@ -101,9 +101,13 @@ d.addPairwiseGaussian(sxy=3, compat=3)
 d.addPairwiseBilateral(sxy=80, srgb=13, rgbim=im, compat=10)
 ```
 
+### Non-RGB bilateral
+
 An important caveat is that `addPairwiseBilateral` only works for RGB images, i.e. three channels.
 If your data is of different type than this simple but common case, you'll need to compute your
 own pairwise energy using `utils.create_pairwise_bilateral`; see the [generic non-2D case](https://github.com/lucasb-eyer/pydensecrf#generic-non-2d) for details.
+
+A good [example of working with Non-RGB data](https://github.com/lucasb-eyer/pydensecrf/blob/master/examples/Non%20RGB%20Example.ipynb) is provided as a notebook in the examples folder.
 
 ### Compatibilities
 
