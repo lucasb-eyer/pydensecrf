@@ -113,6 +113,10 @@ cdef class DenseCRF2D(DenseCRF):
         self._w = w
         self._h = h
 
+        # Also set these for the superclass
+        self._nvar = w*h
+        self._nlabel = nlabels
+
     def addPairwiseGaussian(self, sxy, compat, KernelType kernel=DIAG_KERNEL, NormalizationType normalization=NORMALIZE_SYMMETRIC):
         if isinstance(sxy, Number):
             sxy = (sxy, sxy)
