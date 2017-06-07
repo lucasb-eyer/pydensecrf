@@ -149,6 +149,7 @@ According to the paper, `w(2)` was set to 1 and `w(1)` was cross-validated, but 
 Looking through Philip's code (included in [pydensecrf/densecrf](https://github.com/lucasb-eyer/pydensecrf/tree/master/pydensecrf/densecrf)),
 I couldn't find such explicit weights, and my guess is they are thus hard-coded to 1.
 If anyone knows otherwise, please open an issue or, better yet, a pull-request.
+Update: user @waldol1 has an idea in [this issue](https://github.com/lucasb-eyer/pydensecrf/issues/37). Feel free to try it out!
 
 Inference
 ---------
