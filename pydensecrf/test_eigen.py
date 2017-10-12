@@ -27,7 +27,7 @@ def test_wrong_dims():
 
 
 def test_wrong_type():
-    np_matrix = np.random.randn(3, 3, 3).astype(np.float64)
+    np_matrix = np.random.randn(3, 3).astype(np.float64)
     # c_matrix requies type np.float32
     with pytest.raises(ValueError):
         # Check whether a Value Error is raised
