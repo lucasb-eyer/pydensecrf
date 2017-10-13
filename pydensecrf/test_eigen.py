@@ -1,5 +1,5 @@
 import numpy as np
-import eigen as e
+import pydensecrf.eigen as e
 
 import pytest
 
