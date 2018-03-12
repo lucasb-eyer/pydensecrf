@@ -59,6 +59,9 @@ cdef class DenseCRF:
         else:
             self._this = NULL
 
+        self._nvar = nvar
+        self._nlabel = nlabels
+
     def __dealloc__(self):
         # Because destructors are virtual, this is enough to delete any object
         # of child classes too.
@@ -66,12 +69,20 @@ cdef class DenseCRF:
             del self._this
 
     def addPairwiseEnergy(self, float[:,::1] features not None, compat, KernelType kernel=DIAG_KERNEL, NormalizationType normalization=NORMALIZE_SYMMETRIC):
+        if features.shape[1] != self._nvar:
+            raise ValueError("Bad shape for pairwise energy (Need (?, {}), got {})".format(self._nvar, (features.shape[0], features.shape[1])))
+
         self._this.addPairwiseEnergy(eigen.c_matrixXf(features), _labelcomp(compat), kernel, normalization)
 
     def setUnary(self, Unary u):
         self._this.setUnaryEnergy(u.move())
 
     def setUnaryEnergy(self, float[:,::1] u not None, float[:,::1] f = None):
+        if u.shape[0] != self._nlabel or u.shape[1] != self._nvar:
+            raise ValueError("Bad shape for unary energy (Need {}, got {})".format((self._nlabel, self._nvar), (u.shape[0], u.shape[1])))
+        # TODO: I don't remember the exact shape `f` should have, so I'm not putting an assertion here.
+        #       If you get hit by a wrong shape of `f`, please open an issue with the necessary info!
+
         if f is None:
             self._this.setUnaryEnergy(eigen.c_matrixXf(u))
         else:
@@ -101,6 +112,10 @@ cdef class DenseCRF2D(DenseCRF):
         # we cannot access them from here for sanity-checks, so keep our own...
         self._w = w
         self._h = h
+
+        # Also set these for the superclass
+        self._nvar = w*h
+        self._nlabel = nlabels
 
     def addPairwiseGaussian(self, sxy, compat, KernelType kernel=DIAG_KERNEL, NormalizationType normalization=NORMALIZE_SYMMETRIC):
         if isinstance(sxy, Number):

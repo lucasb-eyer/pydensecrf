@@ -16,7 +16,9 @@ and provide a link to this repository as a footnote or a citation.
 Installation
 ============
 
-You can install this using `pip` by executing:
+The package is on PyPI, so simply run `pip install pydensecrf` to install it.
+
+If you want the newest and freshest version, you can install it by executing:
 
 ```
 pip install git+https://github.com/lucasb-eyer/pydensecrf.git
@@ -101,9 +103,13 @@ d.addPairwiseGaussian(sxy=3, compat=3)
 d.addPairwiseBilateral(sxy=80, srgb=13, rgbim=im, compat=10)
 ```
 
+### Non-RGB bilateral
+
 An important caveat is that `addPairwiseBilateral` only works for RGB images, i.e. three channels.
 If your data is of different type than this simple but common case, you'll need to compute your
 own pairwise energy using `utils.create_pairwise_bilateral`; see the [generic non-2D case](https://github.com/lucasb-eyer/pydensecrf#generic-non-2d) for details.
+
+A good [example of working with Non-RGB data](https://github.com/lucasb-eyer/pydensecrf/blob/master/examples/Non%20RGB%20Example.ipynb) is provided as a notebook in the examples folder.
 
 ### Compatibilities
 
@@ -145,6 +151,7 @@ According to the paper, `w(2)` was set to 1 and `w(1)` was cross-validated, but 
 Looking through Philip's code (included in [pydensecrf/densecrf](https://github.com/lucasb-eyer/pydensecrf/tree/master/pydensecrf/densecrf)),
 I couldn't find such explicit weights, and my guess is they are thus hard-coded to 1.
 If anyone knows otherwise, please open an issue or, better yet, a pull-request.
+Update: user @waldol1 has an idea in [this issue](https://github.com/lucasb-eyer/pydensecrf/issues/37). Feel free to try it out!
 
 Inference
 ---------
@@ -230,3 +237,24 @@ Common Problems
 ---------------------------------
 
 If while importing pydensecrf you get an error about some undefined symbols (for example `.../pydensecrf/densecrf.so: undefined symbol: _ZTINSt8ios_base7failureB5cxx11E`), you most likely are inadvertently mixing different compilers or toolchains. Try to see what's going on using tools like `ldd`. If you're using Anaconda, [running `conda install libgcc` might be a solution](https://github.com/lucasb-eyer/pydensecrf/issues/28).
+
+Maintaining
+===========
+
+These are instructions for maintainers about how to release new versions. (Mainly instructions for myself.)
+
+```
+# Go increment the version in setup.py
+> python setup.py build_ext
+> python setup.py sdist
+> twine upload dist/pydensecrf-VERSION_NUM.tar.gz
+```
+
+And that's it. At some point, it would be cool to automate this on [TravisCI](https://docs.travis-ci.com/user/deployment/pypi/), but not worth it yet.
+At that point, looking into [creating "manylinux" wheels](https://github.com/pypa/python-manylinux-demo) might be nice, too.
+
+Testing
+=======
+
+Thanks to @MarvinTeichmann we now have proper tests, install the package and run `py.test`.
+Maybe there's a better way to run them, but both of us don't know :smile:
