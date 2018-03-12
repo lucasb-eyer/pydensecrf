@@ -252,3 +252,9 @@ These are instructions for maintainers about how to release new versions. (Mainl
 
 And that's it. At some point, it would be cool to automate this on [TravisCI](https://docs.travis-ci.com/user/deployment/pypi/), but not worth it yet.
 At that point, looking into [creating "manylinux" wheels](https://github.com/pypa/python-manylinux-demo) might be nice, too.
+
+Testing
+=======
+
+Thanks to @MarvinTeichmann we now have proper tests, install the package and run `py.test`.
+Maybe there's a better way to run them, but both of us don't know :smile:
