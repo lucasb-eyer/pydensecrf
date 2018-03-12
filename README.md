@@ -244,6 +244,13 @@ Common Problems
 
 If while importing pydensecrf you get an error about some undefined symbols (for example `.../pydensecrf/densecrf.so: undefined symbol: _ZTINSt8ios_base7failureB5cxx11E`), you most likely are inadvertently mixing different compilers or toolchains. Try to see what's going on using tools like `ldd`. If you're using Anaconda, [running `conda install libgcc` might be a solution](https://github.com/lucasb-eyer/pydensecrf/issues/28).
 
+ValueError: Buffer dtype mismatch, expected 'float' but got 'double'
+--------------------------------------------------------------------
+
+This is a pretty [co](https://github.com/lucasb-eyer/pydensecrf/issues/52)mm[on](https://github.com/lucasb-eyer/pydensecrf/issues/49) user error.
+It means exactly what it says: you are passing a `double` but it wants a `float`.
+Solve it by, for example, calling `d.setUnaryEnergy(U.astype(np.float32))` instead of just `d.setUnaryEnergy(U)`, or using `float32` in your code in the first place.
+
 Maintaining
 ===========
 
