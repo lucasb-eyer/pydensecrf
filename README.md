@@ -103,6 +103,12 @@ d.addPairwiseGaussian(sxy=3, compat=3)
 d.addPairwiseBilateral(sxy=80, srgb=13, rgbim=im, compat=10)
 ```
 
+The parameters map to those in the paper as follows: `sxy` in the `Gaussian` case is `$\theta_{\gamma}$`,
+and in the `Bilateral` case, `sxy` and `srgb` map to `$\theta_{\alpha}$` and `$\theta_{\beta}$`, respectively.
+The names are shorthand for "x/y standard-deviation" and "rgb standard-deviation" and for reference, the formula is:
+
+![Equation 3 in the original paper](https://user-images.githubusercontent.com/10962198/36150757-01122bf2-10c5-11e8-97d2-2e833c1c9461.png)
+
 ### Non-RGB bilateral
 
 An important caveat is that `addPairwiseBilateral` only works for RGB images, i.e. three channels.
