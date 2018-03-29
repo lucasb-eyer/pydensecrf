@@ -55,7 +55,7 @@ You can then set a fixed unary potential in the following way:
 
 ```python
 U = np.array(...)     # Get the unary in some way.
-print(U.shape)        # -> (5, 640, 480)
+print(U.shape)        # -> (5, 480, 640)
 print(U.dtype)        # -> dtype('float32')
 U = U.reshape((5,-1)) # Needs to be flat.
 d.setUnaryEnergy(U)
@@ -68,6 +68,15 @@ probabilities `py`, don't forget to `U = -np.log(py)` them.
 
 Requiring the `reshape` on the unary is an API wart that I'd like to fix, but
 don't know how to without introducing an explicit dependency on numpy.
+
+**Note** that the `nlabels` dimension is the first here before the reshape;
+you may need to move it there before reshaping if that's not already the case,
+like so:
+
+```python
+print(U.shape)  # -> (480, 640, 5)
+U = U.transpose(2, 0, 1).reshape((5,-1))
+```
 
 ### Getting a Unary
 
@@ -250,6 +259,15 @@ ValueError: Buffer dtype mismatch, expected 'float' but got 'double'
 This is a pretty [co](https://github.com/lucasb-eyer/pydensecrf/issues/52)mm[on](https://github.com/lucasb-eyer/pydensecrf/issues/49) user error.
 It means exactly what it says: you are passing a `double` but it wants a `float`.
 Solve it by, for example, calling `d.setUnaryEnergy(U.astype(np.float32))` instead of just `d.setUnaryEnergy(U)`, or using `float32` in your code in the first place.
+
+My results are all pixelated like [MS Paint's airbrush tool](http://lmgtfy.com/?q=MS+Paint+Airbrush+tool)!
+----------------------------------------------------------
+
+You screwed up reshaping somewhere and treated the class/label dimension as spatial dimension.
+This is you misunderstanding NumPy's memory layout and nothing that PyDenseCRF can detect or help with.
+
+This mistake often happens for the Unary, see the [**Note** in that section of the README](https://github.com/lucasb-eyer/pydensecrf#unary-potential).
+
 
 Maintaining
 ===========
