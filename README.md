@@ -36,6 +36,12 @@ sudo apt-get remove cython
 sudo pip install -U cython
 ```
 
+### Problems on Windows/VS
+
+Since this library needs to compile C++ code, installation can be a little more problematic than pure Python packages.
+Make sure to [have Cython installed](https://github.com/lucasb-eyer/pydensecrf/issues/62#issuecomment-400563257) or try [installing via conda instead](https://github.com/lucasb-eyer/pydensecrf/issues/69#issuecomment-400639881) if you are getting problems.
+PRs that improve Windows support are welcome.
+
 Usage
 =====
 
