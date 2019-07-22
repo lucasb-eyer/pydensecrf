@@ -1,9 +1,15 @@
 # coding: UTF-8
 from setuptools import setup
+import os
 
 # TODO:
 # - Wrap learning.
 # - Make LabelCompatibility, UnaryEnergy, PairwisePotential extensible? (Maybe overkill?)
+
+# Read the requirements.txt file and install all requirements
+install_requires = []
+with open("requirements.txt") as f:
+    install_requires = f.read().splitlines()
 
 
 # If Cython is available, build using Cython.
@@ -28,6 +34,7 @@ setup(
     url="http://github.com/lucasb-eyer/pydensecrf",
     ext_modules=ext_modules,
     packages=["pydensecrf"],
+    install_requires=install_requires,
     setup_requires=['cython>=0.22'],
     classifiers=[
         "Intended Audience :: Developers",
