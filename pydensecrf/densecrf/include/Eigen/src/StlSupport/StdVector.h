@@ -11,7 +11,7 @@
 #ifndef EIGEN_STDVECTOR_H
 #define EIGEN_STDVECTOR_H
 
-#include "Eigen/src/StlSupport/details.h"
+#include "details.h"
 
 /**
  * This section contains a convenience MACRO which allows an easy specialization of
@@ -43,6 +43,9 @@ namespace std \
     } \
   }; \
 }
+
+// Don't specialize if containers are implemented according to C++11
+#if !EIGEN_HAS_CXX11_CONTAINERS
 
 namespace std {
 
@@ -122,5 +125,7 @@ namespace std {
 #endif
   };
 }
+#endif // !EIGEN_HAS_CXX11_CONTAINERS
+
 
 #endif // EIGEN_STDVECTOR_H

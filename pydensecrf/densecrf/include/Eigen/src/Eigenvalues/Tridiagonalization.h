@@ -18,8 +18,10 @@ namespace internal {
 template<typename MatrixType> struct TridiagonalizationMatrixTReturnType;
 template<typename MatrixType>
 struct traits<TridiagonalizationMatrixTReturnType<MatrixType> >
+  : public traits<typename MatrixType::PlainObject>
 {
-  typedef typename MatrixType::PlainObject ReturnType;
+  typedef typename MatrixType::PlainObject ReturnType; // FIXME shall it be a BandMatrix?
+  enum { Flags = 0 };
 };
 
 template<typename MatrixType, typename CoeffVectorType>
@@ -67,7 +69,7 @@ template<typename _MatrixType> class Tridiagonalization
 
     typedef typename MatrixType::Scalar Scalar;
     typedef typename NumTraits<Scalar>::Real RealScalar;
-    typedef typename MatrixType::Index Index;
+    typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
 
     enum {
       Size = MatrixType::RowsAtCompileTime,
@@ -89,14 +91,12 @@ template<typename _MatrixType> class Tridiagonalization
             >::type DiagonalReturnType;
 
     typedef typename internal::conditional<NumTraits<Scalar>::IsComplex,
-              typename internal::add_const_on_value_type<typename Diagonal<
-                Block<const MatrixType,SizeMinusOne,SizeMinusOne> >::RealReturnType>::type,
-              const Diagonal<
-                Block<const MatrixType,SizeMinusOne,SizeMinusOne> >
+              typename internal::add_const_on_value_type<typename Diagonal<const MatrixType, -1>::RealReturnType>::type,
+              const Diagonal<const MatrixType, -1>
             >::type SubDiagonalReturnType;
 
     /** \brief Return type of matrixQ() */
-    typedef typename HouseholderSequence<MatrixType,CoeffVectorType>::ConjugateReturnType HouseholderSequenceType;
+    typedef HouseholderSequence<MatrixType,typename internal::remove_all<typename CoeffVectorType::ConjugateReturnType>::type> HouseholderSequenceType;
 
     /** \brief Default constructor.
       *
@@ -110,7 +110,7 @@ template<typename _MatrixType> class Tridiagonalization
       *
       * \sa compute() for an example.
       */
-    Tridiagonalization(Index size = Size==Dynamic ? 2 : Size)
+    explicit Tridiagonalization(Index size = Size==Dynamic ? 2 : Size)
       : m_matrix(size,size),
         m_hCoeffs(size > 1 ? size-1 : 1),
         m_isInitialized(false)
@@ -126,8 +126,9 @@ template<typename _MatrixType> class Tridiagonalization
       * Example: \include Tridiagonalization_Tridiagonalization_MatrixType.cpp
       * Output: \verbinclude Tridiagonalization_Tridiagonalization_MatrixType.out
       */
-    Tridiagonalization(const MatrixType& matrix)
-      : m_matrix(matrix),
+    template<typename InputType>
+    explicit Tridiagonalization(const EigenBase<InputType>& matrix)
+      : m_matrix(matrix.derived()),
         m_hCoeffs(matrix.cols() > 1 ? matrix.cols()-1 : 1),
         m_isInitialized(false)
     {
@@ -152,9 +153,10 @@ template<typename _MatrixType> class Tridiagonalization
       * Example: \include Tridiagonalization_compute.cpp
       * Output: \verbinclude Tridiagonalization_compute.out
       */
-    Tridiagonalization& compute(const MatrixType& matrix)
+    template<typename InputType>
+    Tridiagonalization& compute(const EigenBase<InputType>& matrix)
     {
-      m_matrix = matrix;
+      m_matrix = matrix.derived();
       m_hCoeffs.resize(matrix.rows()-1, 1);
       internal::tridiagonalization_inplace(m_matrix, m_hCoeffs);
       m_isInitialized = true;
@@ -305,7 +307,7 @@ typename Tridiagonalization<MatrixType>::DiagonalReturnType
 Tridiagonalization<MatrixType>::diagonal() const
 {
   eigen_assert(m_isInitialized && "Tridiagonalization is not initialized.");
-  return m_matrix.diagonal();
+  return m_matrix.diagonal().real();
 }
 
 template<typename MatrixType>
@@ -313,8 +315,7 @@ typename Tridiagonalization<MatrixType>::SubDiagonalReturnType
 Tridiagonalization<MatrixType>::subDiagonal() const
 {
   eigen_assert(m_isInitialized && "Tridiagonalization is not initialized.");
-  Index n = m_matrix.rows();
-  return Block<const MatrixType,SizeMinusOne,SizeMinusOne>(m_matrix, 1, 0, n-1,n-1).diagonal();
+  return m_matrix.template diagonal<-1>().real();
 }
 
 namespace internal {
@@ -345,7 +346,7 @@ namespace internal {
 template<typename MatrixType, typename CoeffVectorType>
 void tridiagonalization_inplace(MatrixType& matA, CoeffVectorType& hCoeffs)
 {
-  typedef typename MatrixType::Index Index;
+  using numext::conj;
   typedef typename MatrixType::Scalar Scalar;
   typedef typename MatrixType::RealScalar RealScalar;
   Index n = matA.rows();
@@ -366,10 +367,10 @@ void tridiagonalization_inplace(MatrixType& matA, CoeffVectorType& hCoeffs)
     hCoeffs.tail(n-i-1).noalias() = (matA.bottomRightCorner(remainingSize,remainingSize).template selfadjointView<Lower>()
                                   * (conj(h) * matA.col(i).tail(remainingSize)));
 
-    hCoeffs.tail(n-i-1) += (conj(h)*Scalar(-0.5)*(hCoeffs.tail(remainingSize).dot(matA.col(i).tail(remainingSize)))) * matA.col(i).tail(n-i-1);
+    hCoeffs.tail(n-i-1) += (conj(h)*RealScalar(-0.5)*(hCoeffs.tail(remainingSize).dot(matA.col(i).tail(remainingSize)))) * matA.col(i).tail(n-i-1);
 
     matA.bottomRightCorner(remainingSize, remainingSize).template selfadjointView<Lower>()
-      .rankUpdate(matA.col(i).tail(remainingSize), hCoeffs.tail(remainingSize), -1);
+      .rankUpdate(matA.col(i).tail(remainingSize), hCoeffs.tail(remainingSize), Scalar(-1));
 
     matA.col(i).coeffRef(i+1) = beta;
     hCoeffs.coeffRef(i) = h;
@@ -425,8 +426,6 @@ struct tridiagonalization_inplace_selector;
 template<typename MatrixType, typename DiagonalType, typename SubDiagonalType>
 void tridiagonalization_inplace(MatrixType& mat, DiagonalType& diag, SubDiagonalType& subdiag, bool extractQ)
 {
-  typedef typename MatrixType::Index Index;
-  //Index n = mat.rows();
   eigen_assert(mat.cols()==mat.rows() && diag.size()==mat.rows() && subdiag.size()==mat.rows()-1);
   tridiagonalization_inplace_selector<MatrixType>::run(mat, diag, subdiag, extractQ);
 }
@@ -439,7 +438,6 @@ struct tridiagonalization_inplace_selector
 {
   typedef typename Tridiagonalization<MatrixType>::CoeffVectorType CoeffVectorType;
   typedef typename Tridiagonalization<MatrixType>::HouseholderSequenceType HouseholderSequenceType;
-  typedef typename MatrixType::Index Index;
   template<typename DiagonalType, typename SubDiagonalType>
   static void run(MatrixType& mat, DiagonalType& diag, SubDiagonalType& subdiag, bool extractQ)
   {
@@ -467,9 +465,11 @@ struct tridiagonalization_inplace_selector<MatrixType,3,false>
   template<typename DiagonalType, typename SubDiagonalType>
   static void run(MatrixType& mat, DiagonalType& diag, SubDiagonalType& subdiag, bool extractQ)
   {
+    using std::sqrt;
+    const RealScalar tol = (std::numeric_limits<RealScalar>::min)();
     diag[0] = mat(0,0);
-    RealScalar v1norm2 = abs2(mat(2,0));
-    if(v1norm2 == RealScalar(0))
+    RealScalar v1norm2 = numext::abs2(mat(2,0));
+    if(v1norm2 <= tol)
     {
       diag[1] = mat(1,1);
       diag[2] = mat(2,2);
@@ -480,7 +480,7 @@ struct tridiagonalization_inplace_selector<MatrixType,3,false>
     }
     else
     {
-      RealScalar beta = sqrt(abs2(mat(1,0)) + v1norm2);
+      RealScalar beta = sqrt(numext::abs2(mat(1,0)) + v1norm2);
       RealScalar invBeta = RealScalar(1)/beta;
       Scalar m01 = mat(1,0) * invBeta;
       Scalar m02 = mat(2,0) * invBeta;
@@ -510,7 +510,7 @@ struct tridiagonalization_inplace_selector<MatrixType,1,IsComplex>
   template<typename DiagonalType, typename SubDiagonalType>
   static void run(MatrixType& mat, DiagonalType& diag, SubDiagonalType&, bool extractQ)
   {
-    diag(0,0) = real(mat(0,0));
+    diag(0,0) = numext::real(mat(0,0));
     if(extractQ)
       mat(0,0) = Scalar(1);
   }
@@ -526,7 +526,6 @@ struct tridiagonalization_inplace_selector<MatrixType,1,IsComplex>
 template<typename MatrixType> struct TridiagonalizationMatrixTReturnType
 : public ReturnByValue<TridiagonalizationMatrixTReturnType<MatrixType> >
 {
-    typedef typename MatrixType::Index Index;
   public:
     /** \brief Constructor.
       *

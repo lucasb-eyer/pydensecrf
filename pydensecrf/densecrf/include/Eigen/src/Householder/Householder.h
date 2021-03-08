@@ -67,25 +67,29 @@ void MatrixBase<Derived>::makeHouseholder(
   Scalar& tau,
   RealScalar& beta) const
 {
+  using std::sqrt;
+  using numext::conj;
+  
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(EssentialPart)
   VectorBlock<const Derived, EssentialPart::SizeAtCompileTime> tail(derived(), 1, size()-1);
   
   RealScalar tailSqNorm = size()==1 ? RealScalar(0) : tail.squaredNorm();
   Scalar c0 = coeff(0);
+  const RealScalar tol = (std::numeric_limits<RealScalar>::min)();
 
-  if(tailSqNorm == RealScalar(0) && internal::imag(c0)==RealScalar(0))
+  if(tailSqNorm <= tol && numext::abs2(numext::imag(c0))<=tol)
   {
     tau = RealScalar(0);
-    beta = internal::real(c0);
+    beta = numext::real(c0);
     essential.setZero();
   }
   else
   {
-    beta = internal::sqrt(internal::abs2(c0) + tailSqNorm);
-    if (internal::real(c0)>=RealScalar(0))
+    beta = sqrt(numext::abs2(c0) + tailSqNorm);
+    if (numext::real(c0)>=RealScalar(0))
       beta = -beta;
     essential = tail / (c0 - beta);
-    tau = internal::conj((beta - c0) / beta);
+    tau = conj((beta - c0) / beta);
   }
 }
 
@@ -115,7 +119,7 @@ void MatrixBase<Derived>::applyHouseholderOnTheLeft(
   {
     *this *= Scalar(1)-tau;
   }
-  else
+  else if(tau!=Scalar(0))
   {
     Map<typename internal::plain_row_type<PlainObject>::type> tmp(workspace,cols());
     Block<Derived, EssentialPart::SizeAtCompileTime, Derived::ColsAtCompileTime> bottom(derived(), 1, 0, rows()-1, cols());
@@ -152,7 +156,7 @@ void MatrixBase<Derived>::applyHouseholderOnTheRight(
   {
     *this *= Scalar(1)-tau;
   }
-  else
+  else if(tau!=Scalar(0))
   {
     Map<typename internal::plain_col_type<PlainObject>::type> tmp(workspace,rows());
     Block<Derived, Derived::RowsAtCompileTime, EssentialPart::SizeAtCompileTime> right(derived(), 0, 1, rows(), cols()-1);

@@ -43,35 +43,34 @@ struct traits<Select<ConditionMatrixType, ThenMatrixType, ElseMatrixType> >
     ColsAtCompileTime = ConditionMatrixType::ColsAtCompileTime,
     MaxRowsAtCompileTime = ConditionMatrixType::MaxRowsAtCompileTime,
     MaxColsAtCompileTime = ConditionMatrixType::MaxColsAtCompileTime,
-    Flags = (unsigned int)ThenMatrixType::Flags & ElseMatrixType::Flags & HereditaryBits,
-    CoeffReadCost = traits<typename remove_all<ConditionMatrixNested>::type>::CoeffReadCost
-                  + EIGEN_SIZE_MAX(traits<typename remove_all<ThenMatrixNested>::type>::CoeffReadCost,
-                                   traits<typename remove_all<ElseMatrixNested>::type>::CoeffReadCost)
+    Flags = (unsigned int)ThenMatrixType::Flags & ElseMatrixType::Flags & RowMajorBit
   };
 };
 }
 
 template<typename ConditionMatrixType, typename ThenMatrixType, typename ElseMatrixType>
-class Select : internal::no_assignment_operator,
-  public internal::dense_xpr_base< Select<ConditionMatrixType, ThenMatrixType, ElseMatrixType> >::type
+class Select : public internal::dense_xpr_base< Select<ConditionMatrixType, ThenMatrixType, ElseMatrixType> >::type,
+               internal::no_assignment_operator
 {
   public:
 
     typedef typename internal::dense_xpr_base<Select>::type Base;
     EIGEN_DENSE_PUBLIC_INTERFACE(Select)
 
-    Select(const ConditionMatrixType& conditionMatrix,
-           const ThenMatrixType& thenMatrix,
-           const ElseMatrixType& elseMatrix)
-      : m_condition(conditionMatrix), m_then(thenMatrix), m_else(elseMatrix)
+    inline EIGEN_DEVICE_FUNC
+    Select(const ConditionMatrixType& a_conditionMatrix,
+           const ThenMatrixType& a_thenMatrix,
+           const ElseMatrixType& a_elseMatrix)
+      : m_condition(a_conditionMatrix), m_then(a_thenMatrix), m_else(a_elseMatrix)
     {
       eigen_assert(m_condition.rows() == m_then.rows() && m_condition.rows() == m_else.rows());
       eigen_assert(m_condition.cols() == m_then.cols() && m_condition.cols() == m_else.cols());
     }
 
-    Index rows() const { return m_condition.rows(); }
-    Index cols() const { return m_condition.cols(); }
+    inline EIGEN_DEVICE_FUNC Index rows() const { return m_condition.rows(); }
+    inline EIGEN_DEVICE_FUNC Index cols() const { return m_condition.cols(); }
 
+    inline EIGEN_DEVICE_FUNC
     const Scalar coeff(Index i, Index j) const
     {
       if (m_condition.coeff(i,j))
@@ -80,6 +79,7 @@ class Select : internal::no_assignment_operator,
         return m_else.coeff(i,j);
     }
 
+    inline EIGEN_DEVICE_FUNC
     const Scalar coeff(Index i) const
     {
       if (m_condition.coeff(i))
@@ -88,17 +88,17 @@ class Select : internal::no_assignment_operator,
         return m_else.coeff(i);
     }
 
-    const ConditionMatrixType& conditionMatrix() const
+    inline EIGEN_DEVICE_FUNC const ConditionMatrixType& conditionMatrix() const
     {
       return m_condition;
     }
 
-    const ThenMatrixType& thenMatrix() const
+    inline EIGEN_DEVICE_FUNC const ThenMatrixType& thenMatrix() const
     {
       return m_then;
     }
 
-    const ElseMatrixType& elseMatrix() const
+    inline EIGEN_DEVICE_FUNC const ElseMatrixType& elseMatrix() const
     {
       return m_else;
     }
@@ -136,7 +136,7 @@ template<typename Derived>
 template<typename ThenDerived>
 inline const Select<Derived,ThenDerived, typename ThenDerived::ConstantReturnType>
 DenseBase<Derived>::select(const DenseBase<ThenDerived>& thenMatrix,
-                            typename ThenDerived::Scalar elseScalar) const
+                           const typename ThenDerived::Scalar& elseScalar) const
 {
   return Select<Derived,ThenDerived,typename ThenDerived::ConstantReturnType>(
     derived(), thenMatrix.derived(), ThenDerived::Constant(rows(),cols(),elseScalar));
@@ -150,8 +150,8 @@ DenseBase<Derived>::select(const DenseBase<ThenDerived>& thenMatrix,
 template<typename Derived>
 template<typename ElseDerived>
 inline const Select<Derived, typename ElseDerived::ConstantReturnType, ElseDerived >
-DenseBase<Derived>::select(typename ElseDerived::Scalar thenScalar,
-                            const DenseBase<ElseDerived>& elseMatrix) const
+DenseBase<Derived>::select(const typename ElseDerived::Scalar& thenScalar,
+                           const DenseBase<ElseDerived>& elseMatrix) const
 {
   return Select<Derived,typename ElseDerived::ConstantReturnType,ElseDerived>(
     derived(), ElseDerived::Constant(rows(),cols(),thenScalar), elseMatrix.derived());

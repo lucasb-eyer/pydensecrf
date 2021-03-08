@@ -3,7 +3,7 @@
 //
 // Copyright (C) 2009 Claire Maurice
 // Copyright (C) 2009 Gael Guennebaud <gael.guennebaud@inria.fr>
-// Copyright (C) 2010 Jitse Niesen <jitse@maths.leeds.ac.uk>
+// Copyright (C) 2010,2012 Jitse Niesen <jitse@maths.leeds.ac.uk>
 //
 // This Source Code Form is subject to the terms of the Mozilla
 // Public License v. 2.0. If a copy of the MPL was not distributed
@@ -60,7 +60,7 @@ template<typename _MatrixType> class ComplexEigenSolver
     /** \brief Scalar type for matrices of type #MatrixType. */
     typedef typename MatrixType::Scalar Scalar;
     typedef typename NumTraits<Scalar>::Real RealScalar;
-    typedef typename MatrixType::Index Index;
+    typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
 
     /** \brief Complex scalar type for #MatrixType.
       *
@@ -104,7 +104,7 @@ template<typename _MatrixType> class ComplexEigenSolver
       * according to the specified problem \a size.
       * \sa ComplexEigenSolver()
       */
-    ComplexEigenSolver(Index size)
+    explicit ComplexEigenSolver(Index size)
             : m_eivec(size, size),
               m_eivalues(size),
               m_schur(size),
@@ -122,7 +122,8 @@ template<typename _MatrixType> class ComplexEigenSolver
       *
       * This constructor calls compute() to compute the eigendecomposition.
       */
-      ComplexEigenSolver(const MatrixType& matrix, bool computeEigenvectors = true)
+    template<typename InputType>
+    explicit ComplexEigenSolver(const EigenBase<InputType>& matrix, bool computeEigenvectors = true)
             : m_eivec(matrix.rows(),matrix.cols()),
               m_eivalues(matrix.cols()),
               m_schur(matrix.rows()),
@@ -130,7 +131,7 @@ template<typename _MatrixType> class ComplexEigenSolver
               m_eigenvectorsOk(false),
               m_matX(matrix.rows(),matrix.cols())
     {
-      compute(matrix, computeEigenvectors);
+      compute(matrix.derived(), computeEigenvectors);
     }
 
     /** \brief Returns the eigenvectors of given matrix.
@@ -208,7 +209,8 @@ template<typename _MatrixType> class ComplexEigenSolver
       * Example: \include ComplexEigenSolver_compute.cpp
       * Output: \verbinclude ComplexEigenSolver_compute.out
       */
-    ComplexEigenSolver& compute(const MatrixType& matrix, bool computeEigenvectors = true);
+    template<typename InputType>
+    ComplexEigenSolver& compute(const EigenBase<InputType>& matrix, bool computeEigenvectors = true);
 
     /** \brief Reports whether previous computation was successful.
       *
@@ -220,7 +222,26 @@ template<typename _MatrixType> class ComplexEigenSolver
       return m_schur.info();
     }
 
+    /** \brief Sets the maximum number of iterations allowed. */
+    ComplexEigenSolver& setMaxIterations(Index maxIters)
+    {
+      m_schur.setMaxIterations(maxIters);
+      return *this;
+    }
+
+    /** \brief Returns the maximum number of iterations. */
+    Index getMaxIterations()
+    {
+      return m_schur.getMaxIterations();
+    }
+
   protected:
+    
+    static void check_template_parameters()
+    {
+      EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
+    }
+    
     EigenvectorType m_eivec;
     EigenvalueType m_eivalues;
     ComplexSchur<MatrixType> m_schur;
@@ -235,20 +256,24 @@ template<typename _MatrixType> class ComplexEigenSolver
 
 
 template<typename MatrixType>
-ComplexEigenSolver<MatrixType>& ComplexEigenSolver<MatrixType>::compute(const MatrixType& matrix, bool computeEigenvectors)
+template<typename InputType>
+ComplexEigenSolver<MatrixType>& 
+ComplexEigenSolver<MatrixType>::compute(const EigenBase<InputType>& matrix, bool computeEigenvectors)
 {
+  check_template_parameters();
+  
   // this code is inspired from Jampack
-  assert(matrix.cols() == matrix.rows());
+  eigen_assert(matrix.cols() == matrix.rows());
 
   // Do a complex Schur decomposition, A = U T U^*
   // The eigenvalues are on the diagonal of T.
-  m_schur.compute(matrix, computeEigenvectors);
+  m_schur.compute(matrix.derived(), computeEigenvectors);
 
   if(m_schur.info() == Success)
   {
     m_eivalues = m_schur.matrixT().diagonal();
     if(computeEigenvectors)
-      doComputeEigenvectors(matrix.norm());
+      doComputeEigenvectors(m_schur.matrixT().norm());
     sortEigenvalues(computeEigenvectors);
   }
 
@@ -262,6 +287,8 @@ template<typename MatrixType>
 void ComplexEigenSolver<MatrixType>::doComputeEigenvectors(RealScalar matrixnorm)
 {
   const Index n = m_eivalues.size();
+
+  matrixnorm = numext::maxi(matrixnorm,(std::numeric_limits<RealScalar>::min)());
 
   // Compute X such that T = X D X^(-1), where D is the diagonal of T.
   // The matrix X is unit triangular.
@@ -280,7 +307,7 @@ void ComplexEigenSolver<MatrixType>::doComputeEigenvectors(RealScalar matrixnorm
       {
         // If the i-th and k-th eigenvalue are equal, then z equals 0.
         // Use a small value instead, to prevent division by zero.
-        internal::real_ref(z) = NumTraits<RealScalar>::epsilon() * matrixnorm;
+        numext::real_ref(z) = NumTraits<RealScalar>::epsilon() * matrixnorm;
       }
       m_matX.coeffRef(i,k) = m_matX.coeff(i,k) / z;
     }
