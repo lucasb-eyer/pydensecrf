@@ -91,8 +91,8 @@ template<typename Derived> struct determinant_impl<Derived, 4>
 template<typename Derived>
 inline typename internal::traits<Derived>::Scalar MatrixBase<Derived>::determinant() const
 {
-  assert(rows() == cols());
-  typedef typename internal::nested<Derived,Base::RowsAtCompileTime>::type Nested;
+  eigen_assert(rows() == cols());
+  typedef typename internal::nested_eval<Derived,Base::RowsAtCompileTime>::type Nested;
   return internal::determinant_impl<typename internal::remove_all<Nested>::type>::run(derived());
 }
 

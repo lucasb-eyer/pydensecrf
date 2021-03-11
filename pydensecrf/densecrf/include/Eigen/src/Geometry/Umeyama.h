@@ -87,7 +87,7 @@ struct umeyama_transform_matrix_type
 * \f{align*}
 *   T = \begin{bmatrix} c\mathbf{R} & \mathbf{t} \\ \mathbf{0} & 1 \end{bmatrix}
 * \f}
-* minimizing the resudiual above. This transformation is always returned as an 
+* minimizing the residual above. This transformation is always returned as an 
 * Eigen::Matrix.
 */
 template <typename Derived, typename OtherDerived>
@@ -97,7 +97,6 @@ umeyama(const MatrixBase<Derived>& src, const MatrixBase<OtherDerived>& dst, boo
   typedef typename internal::umeyama_transform_matrix_type<Derived, OtherDerived>::type TransformationMatrixType;
   typedef typename internal::traits<TransformationMatrixType>::Scalar Scalar;
   typedef typename NumTraits<Scalar>::Real RealScalar;
-  typedef typename Derived::Index Index;
 
   EIGEN_STATIC_ASSERT(!NumTraits<Scalar>::IsComplex, NUMERIC_TYPE_MUST_BE_REAL)
   EIGEN_STATIC_ASSERT((internal::is_same<Scalar, typename internal::traits<OtherDerived>::Scalar>::value),
@@ -113,7 +112,7 @@ umeyama(const MatrixBase<Derived>& src, const MatrixBase<OtherDerived>& dst, boo
   const Index n = src.cols(); // number of measurements
 
   // required for demeaning ...
-  const RealScalar one_over_n = 1 / static_cast<RealScalar>(n);
+  const RealScalar one_over_n = RealScalar(1) / static_cast<RealScalar>(n);
 
   // computation of mean
   const VectorType src_mean = src.rowwise().sum() * one_over_n;
@@ -136,33 +135,28 @@ umeyama(const MatrixBase<Derived>& src, const MatrixBase<OtherDerived>& dst, boo
 
   // Eq. (39)
   VectorType S = VectorType::Ones(m);
-  if (sigma.determinant()<0) S(m-1) = -1;
+
+  if  ( svd.matrixU().determinant() * svd.matrixV().determinant() < 0 )
+    S(m-1) = -1;
 
   // Eq. (40) and (43)
-  const VectorType& d = svd.singularValues();
-  Index rank = 0; for (Index i=0; i<m; ++i) if (!internal::isMuchSmallerThan(d.coeff(i),d.coeff(0))) ++rank;
-  if (rank == m-1) {
-    if ( svd.matrixU().determinant() * svd.matrixV().determinant() > 0 ) {
-      Rt.block(0,0,m,m).noalias() = svd.matrixU()*svd.matrixV().transpose();
-    } else {
-      const Scalar s = S(m-1); S(m-1) = -1;
-      Rt.block(0,0,m,m).noalias() = svd.matrixU() * S.asDiagonal() * svd.matrixV().transpose();
-      S(m-1) = s;
-    }
-  } else {
-    Rt.block(0,0,m,m).noalias() = svd.matrixU() * S.asDiagonal() * svd.matrixV().transpose();
+  Rt.block(0,0,m,m).noalias() = svd.matrixU() * S.asDiagonal() * svd.matrixV().transpose();
+
+  if (with_scaling)
+  {
+    // Eq. (42)
+    const Scalar c = Scalar(1)/src_var * svd.singularValues().dot(S);
+
+    // Eq. (41)
+    Rt.col(m).head(m) = dst_mean;
+    Rt.col(m).head(m).noalias() -= c*Rt.topLeftCorner(m,m)*src_mean;
+    Rt.block(0,0,m,m) *= c;
   }
-
-  // Eq. (42)
-  const Scalar c = 1/src_var * svd.singularValues().dot(S);
-
-  // Eq. (41)
-  // Note that we first assign dst_mean to the destination so that there no need
-  // for a temporary.
-  Rt.col(m).head(m) = dst_mean;
-  Rt.col(m).head(m).noalias() -= c*Rt.topLeftCorner(m,m)*src_mean;
-
-  if (with_scaling) Rt.block(0,0,m,m) *= c;
+  else
+  {
+    Rt.col(m).head(m) = dst_mean;
+    Rt.col(m).head(m).noalias() -= Rt.topLeftCorner(m,m)*src_mean;
+  }
 
   return Rt;
 }
