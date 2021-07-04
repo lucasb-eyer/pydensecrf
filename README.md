@@ -42,6 +42,16 @@ Since this library needs to compile C++ code, installation can be a little more 
 Make sure to [have Cython installed](https://github.com/lucasb-eyer/pydensecrf/issues/62#issuecomment-400563257) or try [installing via conda instead](https://github.com/lucasb-eyer/pydensecrf/issues/69#issuecomment-400639881) if you are getting problems.
 PRs that improve Windows support are welcome.
 
+### Problems on Colab/Kaggle Kernel
+
+`pydensecrf` does not come pre-installed in Colab or Kaggle Kernel. Running `pip install pydensecrf` will result into
+build failures. Follow these steps instead for Colab/Kaggle Kernel:
+
+```
+pip install -U cython
+pip install git+https://github.com/lucasb-eyer/pydensecrf.git
+```
+
 Usage
 =====
 
