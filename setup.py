@@ -28,7 +28,7 @@ setup(
     url="http://github.com/lucasb-eyer/pydensecrf",
     ext_modules=ext_modules,
     packages=["pydensecrf"],
-    setup_requires=['cython>=0.22'],
+    setup_requires=['cython==0.29.36'],
     classifiers=[
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
