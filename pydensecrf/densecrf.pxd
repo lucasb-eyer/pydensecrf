@@ -1,4 +1,4 @@
-from eigen cimport *
+from .eigen cimport *
 
 
 cdef extern from "densecrf/include/labelcompatibility.h":

@@ -4,8 +4,8 @@
 
 from numbers import Number
 
-import eigen
-cimport eigen
+import pydensecrf.eigen as eigen
+cimport pydensecrf.eigen as eigen
 
 
 cdef LabelCompatibility* _labelcomp(compat) except NULL:
